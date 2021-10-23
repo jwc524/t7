@@ -1,0 +1,127 @@
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <link href="../resources/styles.css" rel="stylesheet" type="text/css">
+    <script src="../resources/tutorials.js"></script>
+    <script>wTitle()</script>
+  </head>
+  <body>
+    <h1>t7: Optimization 1</h1>
+    <script>wNavbar()</script>
+    <table align="right" border="1" cellpadding="5" cellspacing="0">
+      <tbody>
+        <tr bgcolor="#cccccc">
+          <td>...</td>
+          <td colspan="2">&nbsp;</td>
+        </tr>
+        <tr bgcolor="#cccccc">
+          <td>
+            <p>Fib(i-1)</p>
+          </td>
+          <td colspan="2">&nbsp;</td>
+        </tr>
+        <tr>
+          <td>
+            <p>Fib(i) </p>
+          </td>
+          <td>
+            <p align="right">fp:<br>
+              fp+16:</p>
+          </td>
+          <td>
+            <p align="center"><code>old fp </code>|<code> old lr&nbsp; </code><br>
+              <code>&nbsp; </code> |<code> &nbsp;&nbsp; </code>|<code> j </code>|<code>
+                i-1</code><code> </code></p>
+          </td>
+        </tr>
+        <tr bgcolor="#cccccc">
+          <td>Fib(i+1)</td>
+          <td valign="top"> <br>
+          </td>
+          <td bgcolor="#cccccc" valign="top">&nbsp;</td>
+        </tr>
+        <tr bgcolor="#cccccc">
+          <td>...</td>
+          <td valign="top"> <br>
+          </td>
+          <td bgcolor="#cccccc" valign="top">&nbsp;</td>
+        </tr>
+        <tr bgcolor="#cccccc">
+          <td>Fib(n) </td>
+          <td bgcolor="#cccccc" valign="top">&nbsp;</td>
+          <td bgcolor="#cccccc" valign="top">&nbsp;</td>
+        </tr>
+        <tr bgcolor="#cccccc">
+          <td><br>
+            main()<br>
+          </td>
+          <td bgcolor="#cccccc" valign="top"> <br>
+          </td>
+          <td bgcolor="#cccccc" valign="top">&nbsp;</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>This tutorial builds on the code from
+      <script>writeNamedTutorial('fib1')</script> and
+      <script>writeNamedTutorial('fib2')</script>, by implementing the Fibonacci
+      program in a way that is somewhat faster, but still fully recursive. By
+      removing many of the redundant instructions from the compiler-generated
+      code, this program is intended to clarify the essential ones, and to
+      introduce some simple principles of code optimization. To follow the
+      commentary, you will want to open the files <a href="../../../util/showPHP.php?filename=../t0/t0.c"
+        target="t0">../t0/t0.c</a>, <a href="../../../util/showPHP.php?filename=../t6/t6.s"
+        target="t6">../t6/t6.s</a>, and <a href="../../../util/showPHP.php?filename=t7.s"
+        target="t7">t7.s</a> so that you can compare these files easily. Some
+      lines you should notice in <a href="../../../util/showPHP.php?filename=t7.s"
+        target="t7">t7.s</a> are:</p>
+    <blockquote>
+      <p>8-11: If we are dealing with the basis case (i &lt;= 1), don't bother
+        building a stack frame. Just put the return value into <span class="register">w0</span>
+        and return.</p>
+      <p>13-16: These lines are similar to lines 8-10 of <a href="../../../util/showPHP.php?filename=../t6/t6.s"
+          target="t6">t6.s</a>. We do NOT want to interfere with the essential
+        stack frame mechanism. We save a little space on the stack by pushing 32
+        bytes rather than 48, because we only have to store two <code>int</code>s
+        in addition to the frame pointer and link register.</p>
+      <p>18: Because of the way the test was performed in line 8, <span class="register">w0</span>
+        already contains the value i - 1, so we are ready to call Fib(i - 1).</p>
+      <p>20-23: We save the value of j on the stack, retrieve i-1, then call
+        Fib(i - 2). Note that since we saved the value of i&nbsp;-&nbsp;1 on the
+        stack, rather than i, we only subtract 1 here.</p>
+      <p>25-28: We retrieve j off the stack, add to k (which is in <span class="register">w0</span>
+        after the call to Fib(i - 2)), and return. Note that the last two
+        instructions are identical to lines 47-48 of <a href="../../../util/showPHP.php?filename=../t6/t6.s"
+          target="t6">t6.s</a>.</p>
+    </blockquote>
+    <p>This program can be understood without resorting to the debugger. Change
+      to the t6 directory, make and run t6, and enter progressively larger
+      values of N until it takes 5-10 seconds to compute Fib(N). Then change
+      back to this directory, make and run t7, and enter the same value of N.
+      The improved program should compute the same result in about half the
+      time.</p>
+    <p><b>Self-Test</b></p>
+    <ol type="a">
+      <li>(8) How does the stack frame for this program differ from the one for
+        <script>writeNamedTutorial('fib2')</script>? Refer to the stack frame
+        for the previous tutorial, and sketch the equivalent stack frame for
+        this tutorial. (You should be able to do this without the debugger; but
+        it's there if you need it. :-)</li>
+      <li>(2) Note that we didn't bother to optimize the main() program. Why
+        not?</li>
+    </ol>
+    <p align="CENTER"></p>
+    <p><b>Assignment</b></p>
+    <p> Take the disassembled function you created in the previous tutorial, and
+      rewrite it, eliminating unnecessary data movements.&nbsp; Copy your main
+      program <strong>../t0/t0s</strong><em>x</em><strong>m.cpp</strong> to <strong>t7s</strong><em>x</em><strong>m.cpp</strong>,
+      and make sure your improved version compiles, links, and runs. Typically,
+      you can expect to reduce the running time of your function without
+      affecting the correctness of the algorithm. Submit <strong>t7s</strong><em>x</em><strong>m.cpp</strong>
+      and <b>t7s</b><i>x</i><b>.s</b>, using the same letter <i>x</i> that you
+      used to submit your program in
+      <script>writeNamedTutorial('fib1')</script>. Run your revised program, and
+      copy the terminal session into <b>t7s</b><i>x</i><b>.log</b>, and submit
+      that as well.</p>
+    <script>writeFooter()</script>
+  </body>
+</html>
